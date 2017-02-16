@@ -13,12 +13,11 @@ var Converter = require("csvtojson").Converter;
 var app=express();
 app.use("/config", express.static('config'));
 app.use('/', express.static(__dirname + '/../../dist'));
-var router = express.Router();
+//var router = express.Router();
 
 var path = require('path');
 app.use(express.static(path.join(__dirname, 'uploads')));
 
-// para CORN
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -72,7 +71,6 @@ app.post("/upload", upload.array("uploads[]", 12), function (req, res) {
             (function () {
               var string = jsonObj[i].Description;
               var transactionDate = jsonObj[i].Date;
-              console.log(transactionDate+' - '+ string);
               var transactionId = jsonObj[i].ID;
               var amount = jsonObj[i].Amount;
 
@@ -83,21 +81,15 @@ app.post("/upload", upload.array("uploads[]", 12), function (req, res) {
                 };
                 connection.query('INSERT INTO transaction_description SET ?', post, function (error, result, fields) {
                   var fileName=req.files[0].originalname;
-                  var ho=insertTransaction(transactionId, string, transactionDate, amount, fileName, countErrors, check, errors);
+                  var t=insertTransaction(transactionId, string, transactionDate, amount, fileName, countErrors, check, errors);
+                  console.log(t);
                   if (error) {
                     check++;
                     countErrors.push(string);
                     errors.push('Duplicated description - ' + string);
-                    /*if(check >= jsonObj.length){
-                      if (errors.length > 0) {
-                        res.json({error:errors});
-                      }
-                    }*/
                   }
                   else {
                     check++;
-                    console.log('JOSJOSJOJSSO');
-
                   }
                   if(check >= jsonObj.length){
                     updateFile(fileName,countArr,countErrors,startDate,errors,res);
@@ -109,7 +101,9 @@ app.post("/upload", upload.array("uploads[]", 12), function (req, res) {
                 check++;
                 errors.push('The file seems to be missing Amount: ' + amount + ', TransactionID: ' + transactionId + ', Description: ' + string + ', TransactionDate: ' + transactionDate);
                 if(check >= jsonObj.length){
-                  res.json({error:errors});
+                  var fileName=req.files[0].originalname;
+                  updateFile(fileName,countArr,countErrors,startDate,errors,res);
+                  //res.json({error:errors});
                 }
                 return;
               }
@@ -122,7 +116,6 @@ app.post("/upload", upload.array("uploads[]", 12), function (req, res) {
 });
 
 function insertTransaction(transactionId, string, transactionDate, amount, fileName, countErrors, check, errors){
-  console.log(check +'-'+ 'check');
   var queryString2 = 'SELECT transaction_description FROM transaction_description WHERE description = ?';
   connection.query(queryString2, [string], function (error, results, fields) {
     if(transactionId != parseInt(transactionId, 10)){
@@ -151,10 +144,8 @@ function insertTransaction(transactionId, string, transactionDate, amount, fileN
       });
     }
   });
-  return check;
 }
 function updateFile(fileName,countArr,countErrors,startDate,errors,res){
-  console.log('IAHDIHD');
   var endDate=formatDate();
   connection.query('UPDATE file SET total_numbers_of_rows = ?,rows_with_error=?, start_date=?, end_date=? WHERE file_name = ?', [countArr.length, countErrors.length, startDate, endDate, fileName], function (err, result) {
     if (err) {
