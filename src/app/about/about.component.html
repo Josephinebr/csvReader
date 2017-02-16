@@ -1,0 +1,31 @@
+<body class="large-screen">
+<div class="card" style="width: 100%">
+  <h4 class="card-header">Upload file</h4>
+  <div class="card-block" style="width: 100% !important;">
+    <table class="table-responsive card-list-table table table-bordered table-striped">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>File</th>
+        <th>Date</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Description</th>
+        <th>Amount</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let dat of data">
+        <td>{{dat.transaction_id}}</td>
+        <td>{{dat.file_name}}</td>
+        <td>{{dat.transaction_date | date: 'dd/MM/yyyy'}}</td>
+        <td>{{dat.start_date}}</td>
+        <td>{{dat.end_date}}</td>
+        <td>{{dat.description}}</td>
+        <td>{{dat.amount}}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
