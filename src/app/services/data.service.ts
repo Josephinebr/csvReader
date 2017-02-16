@@ -20,16 +20,4 @@ export class DataService {
     return this.http.get(`/my-transactions/`).map(res => res.json());
   }
 
-  addCat(cat): Observable<any> {
-    return this.http.post(`/upload/file`, JSON.stringify(cat), this.options);
-  }
-
-  editCat(cat): Observable<any> {
-    return this.http.put(`/cat/${cat._id}`, JSON.stringify(cat), this.options);
-  }
-
-  deleteCat(cat): Observable<any> {
-    return this.http.delete(`/cat/${cat._id}`, this.options);
-  }
-
 }
