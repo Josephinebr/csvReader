@@ -1,0 +1,12 @@
+# compiled output
+/dist
+/tmp
+
+# dependencies
+/node_modules
+
+# file directory's
+/src/server/error
+/src/server/history
+/src/server/processing
+/src/server/uploads

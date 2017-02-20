@@ -43,7 +43,6 @@ app.post("/upload", upload.array("uploads[]", 12), function (req, res) {
   startDate= formatDate();
 
   csvConverter.on("error", function(err){
-    console.log('bajs');
     res.end("Something went wrong when trying to upload the file!");
   });
     var countArr = [];
