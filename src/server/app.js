@@ -5,6 +5,15 @@ var connection = mysql.createConnection(dbConfig.db);
 connection.connect();
 
 var fs=require('fs');
+
+var dir = './'+dbConfig.uploadFolder;
+var errordir='./'+dbConfig.errorFolder;
+if (!fs.existsSync(dir)){
+  fs.mkdirSync(dir);
+}
+if (!fs.existsSync(errordir)){
+  fs.mkdirSync(errordir);
+}
 var request = require('request');
 var express =   require("express");
 var multer  =   require('multer');
