@@ -2,7 +2,12 @@
 <div class="card" style="width: 100%">
   <h4 class="card-header">Upload file</h4>
   <div class="card-block" style="width: 100% !important;">
-    <table class="table-responsive card-list-table table table-bordered table-striped">
+    <tbody *ngIf="data.length === 0">
+    <tr>
+      <td colspan="4">You don't have any transactions yet.</td>
+    </tr>
+    </tbody>
+    <table *ngIf="data.length > 0" class="table-responsive card-list-table table table-bordered table-striped">
       <thead>
       <tr>
         <th>ID</th>
