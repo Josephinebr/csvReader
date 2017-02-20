@@ -14,6 +14,8 @@ Bootstrap: layout and styles
 2. ../config/csv.sql Create Database and tables (Upload file or use command line)
 
 ## Run
-1. Run cd ../src/server run 'node app.js' to run the backend server
-2. Run `npm start`: run Angular frontend (with autobuild and autoload)
-3. Browser will automatically open to: [localhost:4200](http://localhost:4200)
+1.npm install
+2.npm start
+3. Run cd ../src/server run 'node app.js' to run the backend server
+4. Run `npm start`: run Angular frontend (with autobuild and autoload)
+5. Browser will automatically open to: [localhost:4200](http://localhost:4200)
