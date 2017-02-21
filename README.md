@@ -15,7 +15,9 @@ Bootstrap: layout and styles
 
 ## Run
 1.npm install
-2.npm start
 3. Run cd ../src/server run 'node app.js' to run the backend server
 4. Run `npm start`: run Angular frontend (with autobuild and autoload)
 5. Browser will automatically open to: [localhost:4200](http://localhost:4200)
+
+##Node -v
+6.4.0 or higher

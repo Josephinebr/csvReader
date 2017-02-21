@@ -67,6 +67,7 @@ app.post("/upload", upload.array("uploads[]", 12), function (req, res) {
           return;
         }
         if (results1.affectedRows === 0) {
+          moveFolder(req.files[0].originalname, dbConfig.uploadFolder, dbConfig.errorFolder);
           errFile.push('File already exists');
           res.json({error: errFile});
           return;
