@@ -1,10 +1,27 @@
+var path = require('path');
+var request = require('request');
+var express =   require("express");
+var multer  =   require('multer');
+var moment= require('moment');
+var Converter = require("csvtojson").Converter;
+var fs=require('fs');
+
 var dbConfig = require("../config/db.json");
 var mysql      = require('mysql');
 var connection = mysql.createConnection(dbConfig.db);
 
 connection.connect();
 
-var fs=require('fs');
+var app=express();
+
+app.use("/config", express.static('config'));
+app.use('/', express.static(__dirname + '/../../dist'));
+app.use(express.static(path.join(__dirname, 'uploads')));
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 var dir = './'+dbConfig.uploadFolder;
 var errordir='./'+dbConfig.errorFolder;
@@ -14,24 +31,6 @@ if (!fs.existsSync(dir)){
 if (!fs.existsSync(errordir)){
   fs.mkdirSync(errordir);
 }
-var request = require('request');
-var express =   require("express");
-var multer  =   require('multer');
-var moment= require('moment');
-var Converter = require("csvtojson").Converter;
-var app=express();
-app.use("/config", express.static('config'));
-app.use('/', express.static(__dirname + '/../../dist'));
-//var router = express.Router();
-
-var path = require('path');
-app.use(express.static(path.join(__dirname, 'uploads')));
-
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
 
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -43,6 +42,7 @@ var storage = multer.diskStorage({
 });
 
 var upload = multer({ storage: storage });
+
 app.post("/upload", upload.array("uploads[]", 12), function (req, res) {
 
   var csvFileName='./'+dbConfig.uploadFolder+'/'+req.files[0].originalname;
@@ -60,7 +60,9 @@ app.post("/upload", upload.array("uploads[]", 12), function (req, res) {
     var check=0;
     var countErrors=[];
     csvConverter.on("end_parsed", function (jsonObj) {
-      var queryFile= 'INSERT INTO file (file_name, total_numbers_of_rows, rows_with_error, start_date) SELECT * FROM (SELECT "' + req.files[0].originalname + '", "' + countArr.length + '", "' + countErrors + '", "' + formatDate() + '") AS tmp WHERE NOT EXISTS ( SELECT file_name FROM file WHERE file_name = "' + req.files[0].originalname + '")';
+      var queryFile= 'INSERT INTO file (file_name, total_numbers_of_rows, rows_with_error, start_date) SELECT * FROM ' +
+          '(SELECT "' + req.files[0].originalname + '", "' + countArr.length + '", "' + countErrors + '", "' + formatDate() + '") ' +
+          'AS tmp WHERE NOT EXISTS ( SELECT file_name FROM file WHERE file_name = "' + req.files[0].originalname + '")';
       connection.query(queryFile, function (error, results1, fields) {
         if (error) {
           moveFolder(req.files[0].originalname, dbConfig.uploadFolder, dbConfig.errorFolder);
@@ -112,7 +114,6 @@ app.post("/upload", upload.array("uploads[]", 12), function (req, res) {
                 if(check >= jsonObj.length){
                   var fileName=req.files[0].originalname;
                   updateFile(fileName,countArr,countErrors,startDate,errors,res);
-                  //res.json({error:errors});
                 }
                 return;
               }
@@ -156,7 +157,8 @@ function insertTransaction(transactionId, string, transactionDate, amount, fileN
 }
 function updateFile(fileName,countArr,countErrors,startDate,errors,res){
   var endDate=formatDate();
-  connection.query('UPDATE file SET total_numbers_of_rows = ?,rows_with_error=?, start_date=?, end_date=? WHERE file_name = ?', [countArr.length, countErrors.length, startDate, endDate, fileName], function (err, result) {
+  connection.query('UPDATE file SET total_numbers_of_rows = ?,rows_with_error=?, start_date=?, end_date=? ' +
+      'WHERE file_name = ?', [countArr.length, countErrors.length, startDate, endDate, fileName], function (err, result) {
     if (err) {
       throw err;
     }
@@ -171,10 +173,6 @@ function updateFile(fileName,countArr,countErrors,startDate,errors,res){
 function formatDate(date) {
   return moment(date).format('YYYY-MM-DD HH:mm:ss');
 }
-
-app.listen(dbConfig.port,function(){
-  console.log("Working on port " + dbConfig.port);
-});
 
 function moveFolder(filename, directory1, directory2){
   var mv=require('mv');
@@ -197,7 +195,10 @@ app.get('/my-files',function(req,res){
 
 app.get('/my-transactions/',function(req,res){
   var fileName=req.params.file_name;
-  var queryString2 = 'SELECT file_name, start_date, end_date, t.transaction_id, t.transaction_date, t.amount, t.transaction_description, td.transaction_description, td.description FROM file join transactions as t on t.file = file.file_name join transaction_description as td on td.transaction_description=t.transaction_description';
+  var queryString2 = 'SELECT file_name, start_date, end_date, t.transaction_id, t.transaction_date, ' +
+      't.amount, t.transaction_description, td.transaction_description, td.description ' +
+      'FROM file join transactions as t on t.file = file.file_name join transaction_description ' +
+      'as td on td.transaction_description=t.transaction_description';
   connection.query(queryString2, function (error, results2, fields) {
     if (results2.length <= 0) {
       res.json(results2);
@@ -206,6 +207,10 @@ app.get('/my-transactions/',function(req,res){
       res.json(results2);
     }
   });
+});
+
+app.listen(dbConfig.port,function(){
+  console.log("Working on port " + dbConfig.port);
 });
 app.get('/*',function(req,res){
   res.sendFile(path.join(__dirname,'/../../dist/index.html'));
